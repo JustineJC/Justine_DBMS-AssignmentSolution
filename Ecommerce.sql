@@ -1,3 +1,4 @@
+/*Problem 1*/
 create database Ecommerce;
 use Ecommerce;
 CREATE TABLE IF NOT EXISTS supplier( SUPP_ID int primary key,
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS rating ( RAT_ID INT NOT NULL,
 ORD_ID INT NOT NULL, RAT_RATSTARS INT NOT NULL, PRIMARY KEY (RAT_ID),
 FOREIGN KEY (ORD_ID) REFERENCES `order`(ORD_ID) );
 
+/*Problem 2*/
 INSERT INTO SUPPLIER VALUES(1,"Rajesh Retails","Delhi",'1234567890'); 
 INSERT INTO SUPPLIER VALUES(2,"Appario Ltd.","Mumbai",'2589631470'); 
 INSERT INTO SUPPLIER VALUES(3,"Knome products","Banglore",'9785462315'); 
@@ -116,21 +118,23 @@ INSERT INTO RATING VALUES(15,115,1);
 INSERT INTO RATING VALUES(16,116,0);
 commit;
 
+/*Problem 3*/
 select count(t1.cus_gender) as NoOfCustomers, t1.cus_gender,t1.ord_amount from 
 (select `order`.*, customer.cus_gender, customer.cus_name 
 from `order` inner join customer 
 where `order`.cus_id=customer.cus_id 
 having `order`.ord_amount>=3000) as t1 group by t1.cus_gender;
 
+/*Problem 4*/
 select product.pro_name, `order`.* from `order`, supplier_pricing, product
 where `order`.cus_id=2 and `order`.PRICING_ID=supplier_pricing.PRICING_ID and 
 supplier_pricing.PRO_ID=product.PRO_id;
 
-
+/*Problem 5*/
 select supplier.* from supplier where supplier.supp_id in (
-select supp_id from supplier_pricing group by supp_id having count(supp_id)>3) group by supplier.supp_id;
+select supp_id from supplier_pricing group by supp_id having count(supp_id)>2) group by supplier.supp_id;
 
-
+/*Problem 6*/
 select category.cat_id, category.cat_name, min(t2.min_price) as Min_Price 
 from category inner join
 (select product.cat_id, product.pro_name, t1.* from product inner join
@@ -138,9 +142,31 @@ from category inner join
 where t1.PRO_id=product.pro_id) as t2 
 where t2.cat_id=category.cat_id group by category.cat_id;
 
+/*Problem 7*/
 select product.pro_id, product.pro_name from `order` inner join supplier_pricing on 
 supplier_pricing.PRICING_ID=`order`.PRICING_ID inner join product 
 on product.pro_id=supplier_pricing.pro_id where 
 `order`.ORD_DATE>"2021-10-05";
 
-select cus_name as Name,cus_gender as Gender FROM CUSTOMER WHERE CUS_NAME LIKE "A%" or cus_name like "%a"; 
+/*Problem 8*/
+select cus_name as Name,cus_gender as Gender FROM CUSTOMER WHERE lower(CUS_NAME) LIKE "a%" or lower(cus_name) like "%a"; 
+
+/*Problem 9*/
+CREATE PROCEDURE `sp_typeofservice` ()
+BEGIN
+select * from
+(select sup.supp_id as SupplierID,supplier.SUPP_NAME as SupplierName,sup.rat_ratstars as StarRating, 
+case when sup.rat_ratstars=5 then "Excellent Service"
+when sup.rat_ratstars>4 then "Good Service"
+when sup.rat_ratstars>2 then "Average Service"
+else "Poor Service"
+end as Types_of_service
+from supplier inner join
+(select s.Pricing_Id,supplier_pricing.SUPP_ID,S.rat_id,s.rat_ratstars from supplier_pricing inner join
+(select r.*,`order`.PRICING_ID from `order` inner join
+(select * from rating) as R on `order`.ORD_ID=R.ORD_ID) as S on S.PRICING_ID=supplier_pricing.PRICING_ID) as sup
+on sup.SUPP_ID=supplier.SUPP_ID) as typeofservice; 
+END
+
+call sp_typeofservice();
+commit;
