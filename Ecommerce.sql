@@ -123,7 +123,7 @@ select count(t1.cus_gender) as NoOfCustomers, t1.cus_gender,t1.ord_amount from
 (select `order`.*, customer.cus_gender, customer.cus_name 
 from `order` inner join customer 
 where `order`.cus_id=customer.cus_id 
-having `order`.ord_amount>=3000) as t1 group by t1.cus_gender;
+having `order`.ord_amount>=3000 group by customer.CUS_ID) as t1 group by t1.cus_gender;
 
 /*Problem 4*/
 select product.pro_name, `order`.* from `order`, supplier_pricing, product
@@ -152,7 +152,7 @@ on product.pro_id=supplier_pricing.pro_id where
 select cus_name as Name,cus_gender as Gender FROM CUSTOMER WHERE lower(CUS_NAME) LIKE "a%" or lower(cus_name) like "%a"; 
 
 /*Problem 9*/
-CREATE PROCEDURE `sp_typeofservice` ()
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_typeofservice`()
 BEGIN
 select * from
 (select sup.supp_id as SupplierID,supplier.SUPP_NAME as SupplierName,sup.rat_ratstars as StarRating, 
